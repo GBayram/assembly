@@ -1,0 +1,101 @@
+; PORTC YE BAGLANAN 8 TANE LED'I AYRI AYRI BUTONLARDAN KONTROL ETME.
+;r16 adet reg
+;r17 par reg
+;r18 adet buton reg
+;r19 par bbuton reg
+;r20 , r19 ve r 18 in veyalanmis hali
+.org 0
+
+initally:
+	ldi r16,255		
+	out ddrc,r16 ;C portu cikis 
+	ldi r16,0
+	out ddrd,r16;d portu giris
+	ldi r16,255
+	out portd,r16;pull up aktif
+
+	ldi r16,1
+	ldi r17,15
+
+led_yak:
+	call bekle
+	sbrc r18,0
+	call adet_reg_kaydir
+dbir:
+	sbrc r19,0
+	call par_reg_kaydir
+diki:
+	;temp=r17 | r16
+	;ledport=temp
+
+	lds r22,16
+	lds r23,17
+
+	lsl r23
+	lsl r23
+	lsl r23
+	lsl r23
+
+	or r22,r23
+	out portc,r22
+	jmp led_yak
+
+
+adet_reg_kaydir:
+	ldi r18,0
+	ldi r22,15
+	cp r16,r22
+	breq adet_reg_bir_yap
+	lds r22,16 ;temp
+	lsl r16
+	or r16,r22
+	ret
+
+	
+adet_reg_bir_yap:
+	ldi r16,1
+	jmp dbir
+
+
+par_reg_kaydir:
+	ldi r19,0
+	ldi r22,15
+	cp r17,r22
+	breq par_reg_bir_yap
+	lds r22,17 ;temp
+	lsl r17
+	or r17,r22
+	ret
+
+	
+par_reg_bir_yap:
+	ldi r17,1
+	jmp diki
+
+
+bekle:				
+
+	LDI r23,25
+L1:
+	LDI	R21,200
+L2:
+	LDI	R22,250
+L3:
+	NOP
+	NOP
+	DEC	R22
+	BRNE	L3
+	DEC R21
+	BRNE	L2
+	call buton_kontrol
+	DEC R23
+	BRNE	L1
+	ret
+
+buton_kontrol:
+	
+	sbis pind,0
+	ori r19,1
+	sbis pind,1
+	ori r18,1
+	ret
